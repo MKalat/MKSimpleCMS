@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>{% block title %}{{ sitename }} Homepage Login{% endblock %}</title>
+        {% block stylesheets %}
+            <link rel="stylesheet" type="text/css" href="{{asset('js/vendor/startbootstrap-sb-admin-2/vendor/bootstrap/css/bootstrap.css')}}">
+            <link rel="stylesheet" type="text/css" href="{{asset('js/vendor/startbootstrap-sb-admin-2/vendor/metisMenu/metisMenu.css')}}">
+            <link rel="stylesheet" type="text/css" href="{{asset('js/vendor/startbootstrap-sb-admin-2/dist/css/sb-admin-2.css')}}">
+            <link rel="stylesheet" type="text/css" href="{{asset('js/vendor/startbootstrap-sb-admin-2/vendor/morrisjs/morris.css')}}">
+            <link rel="stylesheet" type="text/css" href="{{asset('js/vendor/startbootstrap-sb-admin-2/vendor/font-awesome/css/font-awesome.css')}}">
+            <link rel="stylesheet" type="text/css" href="{{asset('js/vendor/startbootstrap-sb-admin-2/vendor/datatables/css/jquery.dataTables.css')}}">
+        {% endblock %}
+        {% block head_javascripts %}
+            <script type="text/javascript" src="{{asset('js/vendor/startbootstrap-sb-admin-2/vendor/jquery/jquery.js')}}" ></script>
+            <script type="text/javascript" src="{{asset('js/vendor/startbootstrap-sb-admin-2/vendor/bootstrap/js/bootstrap.js')}}" ></script>
+            <script type="text/javascript" src="{{asset('js/vendor/startbootstrap-sb-admin-2/vendor/metisMenu/metisMenu.js')}}" ></script>
+            <script type="text/javascript" src="{{asset('js/vendor/startbootstrap-sb-admin-2/dist/js/sb-admin-2.js')}}"></script>
+            <script type="text/javascript" src="{{asset('js/vendor/startbootstrap-sb-admin-2/vendor/raphael/raphael.js')}}"></script>
+            <script type="text/javascript" src="{{asset('js/vendor/startbootstrap-sb-admin-2/vendor/morrisjs/morris.js')}}"></script>
+            <script type="text/javascript" src="{{asset('js/vendor/startbootstrap-sb-admin-2/vendor/datatables/js/jquery.dataTables.js')}}"></script>
+        {% endblock %}
+        
+        <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
+    </head>
+    <body>
+
+{% block body %}
+{% if error %}
+    <div>{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+{% endif %}
+<div class="container">
+        <div class="row">
+            <div class="col-md-4 col-md-offset-4">
+                <div class="login-panel panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Please Sign In</h3>
+                    </div>
+                    <div class="panel-body">
+                        <form action="{{ url('login') }}" method="post">
+                            <fieldset>
+                                <div class="form-group">
+                                    <input type="text" id="username" name="_username" value="{{ last_username }}" />
+                                </div>
+                                <div class="form-group">
+                                    <input type="password" id="password" name="_password" />
+                                </div>
+                                
+                               
+                                <button type="submit">Login</button>
+                            </fieldset>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+</body>
+</html>
