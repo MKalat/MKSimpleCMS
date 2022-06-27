@@ -7,7 +7,7 @@ use App\Entity\Download;
 use App\Entity\Links;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\PasswordHasher\PasswordHasherInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use App\Entity\LoginLogs;
@@ -892,23 +892,23 @@ class AdminController extends AbstractController
     /**
      * @Route("/admin/usernew", name="new-user")
      */
-    public function userNewAction(Request $request, EntityManagerInterface $em, PasswordHasherInterface $passwordEncoder)
+    public function userNewAction(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $passwordEncoder)
     {
         if ($request->getRealMethod() == 'POST') {
             $userDetails = new User();
             $userDetails->setUsername($request->request->get('username'));
-            $userDetails->setPassword($passwordEncoder->hash($request->request->get('password')));
+            $userDetails->setPassword($passwordEncoder->hashPassword($userDetails, $request->request->get('password')));
             $userDetails->setEmail($request->request->get('email'));
             $entityManager = $em;
             $entityManager->persist($userDetails);
             $entityManager->flush();
 
-            return $this->render('admin/adminuseretails.html.twig', array(
+            return $this->render('admin/adminuserdetails.html.twig', array(
                 'logs' => $userDetails
 
             ));
         } else {
-            return $this->render('admin/adminuseretails.html.twig', array(
+            return $this->render('admin/adminuserdetails.html.twig', array(
                 'logs' => null
 
             ));
