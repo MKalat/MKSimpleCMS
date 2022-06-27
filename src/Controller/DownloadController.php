@@ -5,6 +5,7 @@ namespace App\Controller;
 
 use App\Entity\Links;
 use App\Entity\Download;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -23,23 +24,21 @@ class DownloadController extends AbstractController
     /**
      * @Route("/dls/{_locale}/page_no/{current_page}", name="downloads", defaults={"_locale" = "en", "current_page" = "1"}, requirements={"_locale" = "en|pl"})
      */
-    public function index(Request $request, $current_page)
+    public function index(Request $request, EntityManagerInterface $em, $current_page)
     {
         $_locale = $request->getLocale();
 
         $current_page = filter_var($current_page, FILTER_SANITIZE_STRING);
         
-        if ($current_page == "")
-        {
+        if ($current_page == "") {
             $current_page = 1;
-        }
-        else {
+        } else {
             $current_page = intval($current_page);
         }
         
         $posts = $this->repo->findAllDownloadsByLang($_locale, "DESC", $current_page);
 
-        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager = $em;
         $query = $entityManager->createQuery(
             "SELECT l
             FROM App:Links l
@@ -49,24 +48,18 @@ class DownloadController extends AbstractController
 
         $links = $query->getResult();
         
-        if ($current_page ==1)
-        {
+        if ($current_page ==1) {
             $previous_page = 1;
-        }
-        else {
+        } else {
             $previous_page = $current_page - 1;
         }
         $num_pages = round(count($posts) / 5);
-        if ($num_pages == 0)
-        {
+        if ($num_pages == 0) {
             $num_pages = 1;
         }
-        if (($current_page + 1) >= $num_pages)
-        {
+        if (($current_page + 1) >= $num_pages) {
             $next_page = $num_pages;
-        }
-        else
-        {
+        } else {
             $next_page = $current_page + 1;
         }
         $last_page = $num_pages;
@@ -81,54 +74,48 @@ class DownloadController extends AbstractController
             'currentPage' => $current_page,
 
         ));
-
     }
     
     /**
      * @Route("/dls/{_locale}/download/{dlItem}", name="downloadItem", defaults={"_locale" = "en", "dlItem" = ""}, requirements={"_locale" = "en|pl"})
      */
-    public function donwloadItem(Request $request, $dlItem)
+    public function donwloadItem(Request $request, EntityManagerInterface $em, $dlItem)
     {
         $_locale = $request->getLocale();
         
         $dlItem = filter_var($dlItem, FILTER_SANITIZE_STRING);
         
-        if ($dlItem == "")
-        {
+        if ($dlItem == "") {
             $dlItem = 1;
-        }
-        else {
+        } else {
             $dlItem = intval($dlItem);
         }
         
         $download = $this->repo->find($dlItem);
         //var_dump($download);
         
-        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager = $em;
         $query = $entityManager->createQuery(
             "SELECT l
             FROM App:Links l
             WHERE l.lang = :lang AND l.link != '0'
             ORDER BY l.pozycja ASC"
-            )->setParameter('lang', $_locale);
+        )->setParameter('lang', $_locale);
             
-       $links = $query->getResult();
+        $links = $query->getResult();
            
-       return $this->render('default/download-item.html.twig', array(
+        return $this->render('default/download-item.html.twig', array(
                 'links' => $links,
                 'lang' => $_locale,
                 'posts' => $download,
                 
             ));
-            
-            
-        
     }
 
     /**
      * @Route("/dls/{_locale}/search", name="downloads-search", defaults={"_locale" = "en"}, requirements={"_locale" = "en|pl"})
      */
-    public function search(Request $request)
+    public function search(Request $request, EntityManagerInterface $em)
     {
         $_locale = $request->getLocale();
         $search_term = $request->get('search_term');
@@ -141,7 +128,7 @@ class DownloadController extends AbstractController
 
         $posts = $this->repo->findAllDownloadsBySearch($_locale, "DESC", $search_term);
 
-        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager = $em;
         $query = $entityManager->createQuery(
             "SELECT l
             FROM App:Links l
@@ -159,7 +146,5 @@ class DownloadController extends AbstractController
             'posts' => $posts,
             'searchTerm' => $search_term
         ));
-
     }
-
 }

@@ -1,9 +1,7 @@
 security:
     encoders:
         App\Entity\User:
-            algorithm: plaintext
-
-        # ...
+            algorithm: auto
 
     providers:
         our_db_provider:

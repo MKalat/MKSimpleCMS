@@ -21,32 +21,32 @@ class Links
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      */
-    private $id;
+    private int $id;
 
     /**
      * @ORM\Column(type="string")
      */
-    private $pozycja;
+    private string $pozycja;
 
     /**
      * @ORM\Column(type="string")
      */
-    private $etykieta;
+    private string $etykieta;
 
     /**
      * @ORM\Column(type="string")
      */
-    private $link;
+    private string $link;
 
     /**
      * @ORM\Column(type="string")
      */
-    private $strona;
+    private string $strona;
 
     /**
      * @ORM\Column(type="string")
      */
-    private $lang;
+    private string $lang;
 
 
 
@@ -57,58 +57,53 @@ class Links
         return $this->id;
     }
 
-    public function getPozycja()
+    public function getPozycja(): string
     {
         return $this->pozycja;
     }
 
-    public function getEtykieta()
+    public function getEtykieta(): string
     {
         return $this->etykieta;
     }
 
-    public function getLink()
+    public function getLink(): string
     {
         return $this->link;
     }
 
-    public function getStrona()
+    public function getStrona(): string
     {
         return $this->strona;
     }
 
-    public function getLang()
+    public function getLang(): string
     {
         return $this->lang;
     }
 
-    public function setPozycja($value)
+    public function setPozycja(string $value)
     {
         $this->pozycja = $value;
     }
 
-    public function setEtykieta($value)
+    public function setEtykieta(string $value)
     {
         $this->etykieta = $value;
     }
 
-    public function setLink($value)
+    public function setLink(string $value)
     {
         $this->link = $value;
     }
 
-    public function setStrona($value)
+    public function setStrona(string $value)
     {
         $this->strona = $value;
     }
 
-    public function setLang($value)
+    public function setLang(string $value)
     {
         $this->lang = $value;
     }
-
-
 }
-
-
-

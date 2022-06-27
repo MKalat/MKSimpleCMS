@@ -8,30 +8,29 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
-
-
+use Doctrine\ORM\EntityManagerInterface;
 
 class FAQController extends AbstractController
 {
     /**
      * @Route("/faq/{_locale}/{title}", name="faq", defaults={"_locale" = "en", "title" = "0"}, requirements={"_locale" = "en|pl"})
      */
-    public function index(Request $request, $title)
+    public function index(Request $request, EntityManagerInterface $em, $title)
     {
         $_locale = $request->getLocale();
 
         $title = filter_var($title, FILTER_SANITIZE_STRING);
 
-        $faqRepo = $this->getDoctrine()->getRepository('App:FAQ');
+        $faqRepo = $em->getRepository('App:FAQ');
 
         $faq = '';
 
         if (!$title) {
-            $faq = $faqRepo->findBy(array(
+            $faq = $faqRepo->findBy(
+                array(
                 "lang" => $_locale),
                 array(
                     "id" => "ASC")
-
             );
         } else {
             $faq = $faqRepo->findOneBy(array(
@@ -40,8 +39,7 @@ class FAQController extends AbstractController
             ));
         }
 
-        $entityManager = $this->getDoctrine()->getManager();
-        $query = $entityManager->createQuery(
+        $query = $em->createQuery(
             "SELECT l
             FROM App:Links l
             WHERE l.lang = :lang AND l.link != '0'
@@ -55,8 +53,5 @@ class FAQController extends AbstractController
             'lang' => $_locale,
             'faq' => $faq,
         ));
-
     }
 }
-
-

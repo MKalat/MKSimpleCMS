@@ -20,43 +20,43 @@ class BlogPost
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      */
-    private $id;
+    private int $id;
 
     /**
      * @ORM\Column(type="string")
      */
-    private $title;
+    private string $title;
 
     /**
      * @ORM\Column(type="text")
      */
-    private $content;
+    private string $content;
 
     /**
      * @ORM\Column(type="string")
      */
-    private $category;
+    private string $category;
 
     /**
      * @ORM\Column(type="string")
      */
-    private $date;
+    private string $date;
 
     /**
      * @ORM\Column(type="string")
      */
-    private $lang;
+    private string $lang;
     
     /**
      * @ORM\Column(type="string")
      */
-    private $timestamp;
+    private string $timestamp;
 
     
     /**
      * @return mixed
      */
-    public function getTimestamp()
+    public function getTimestamp(): string
     {
         return $this->timestamp;
     }
@@ -64,7 +64,7 @@ class BlogPost
     /**
      * @param mixed $timestamp
      */
-    public function setTimestamp($timestamp)
+    public function setTimestamp(string $timestamp)
     {
         $this->timestamp = strtotime($timestamp);
     }
@@ -72,7 +72,7 @@ class BlogPost
     /**
      * @return mixed
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -80,7 +80,7 @@ class BlogPost
     /**
      * @param mixed $id
      */
-    public function setId($id): void
+    public function setId(int $id): void
     {
         $this->id = $id;
     }
@@ -88,7 +88,7 @@ class BlogPost
     /**
      * @return mixed
      */
-    public function getTitle()
+    public function getTitle(): string
     {
         return $this->title;
     }
@@ -96,7 +96,7 @@ class BlogPost
     /**
      * @param mixed $title
      */
-    public function setTitle($title): void
+    public function setTitle(string $title): void
     {
         $this->title = $title;
     }
@@ -104,7 +104,7 @@ class BlogPost
     /**
      * @return mixed
      */
-    public function getContent()
+    public function getContent(): string
     {
         return $this->content;
     }
@@ -112,7 +112,7 @@ class BlogPost
     /**
      * @param mixed $content
      */
-    public function setContent($content): void
+    public function setContent(string $content): void
     {
         $this->content = $content;
     }
@@ -120,7 +120,7 @@ class BlogPost
     /**
      * @return mixed
      */
-    public function getCategory()
+    public function getCategory(): string
     {
         return $this->category;
     }
@@ -128,7 +128,7 @@ class BlogPost
     /**
      * @param mixed $category
      */
-    public function setCategory($category): void
+    public function setCategory(string $category): void
     {
         $this->category = $category;
     }
@@ -136,7 +136,7 @@ class BlogPost
     /**
      * @return mixed
      */
-    public function getDate()
+    public function getDate(): string
     {
         return $this->date;
     }
@@ -144,7 +144,7 @@ class BlogPost
     /**
      * @param mixed $date
      */
-    public function setDate($date): void
+    public function setDate(string $date): void
     {
         $this->date = $date;
         $this->setTimestamp($date);
@@ -154,7 +154,7 @@ class BlogPost
     /**
      * @return mixed
      */
-    public function getLang()
+    public function getLang(): string
     {
         return $this->lang;
     }
@@ -162,12 +162,8 @@ class BlogPost
     /**
      * @param mixed $lang
      */
-    public function setLang($lang): void
+    public function setLang(string $lang): void
     {
         $this->lang = $lang;
     }
-
-
-
-
 }

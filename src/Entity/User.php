@@ -8,42 +8,42 @@
 
 namespace App\Entity;
 
-
 use Doctrine\ORM\Mapping as ORM;
+use Serializable;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * @ORM\Entity
  * @ORM\Table(name="users")
  */
-class User implements UserInterface, \Serializable
+class User implements UserInterface, Serializable
 {
     /**
      * @ORM\Column(type="integer", name="id")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      */
-    private $id;
+    private int $id;
 
     /**
      * @ORM\Column(type="string")
      */
-    private $username;
+    private string $username;
 
     /**
      * @ORM\Column(type="string")
      */
-    private $password;
+    private string $password;
 
     /**
      * @ORM\Column(type="string")
      */
-    private $email;
+    private string $email;
 
     /**
      * @ORM\Column(type="boolean")
      */
-    private $isActive;
+    private bool $isActive;
 
     public function __construct()
     {
@@ -59,13 +59,13 @@ class User implements UserInterface, \Serializable
         return null;
     }
 
-    public function getRoles()
+    public function getRoles(): array
     {
         return array('ROLE_USER');
     }
 
     /** @see \Serializable::serialize() */
-    public function serialize()
+    public function serialize(): string
     {
         return serialize(array(
             $this->id,
@@ -90,13 +90,12 @@ class User implements UserInterface, \Serializable
 
     public function eraseCredentials()
     {
-
     }
 
     /**
      * @param mixed $id
      */
-    public function setId($id)
+    public function setId(int $id)
     {
         $this->id = $id;
     }
@@ -104,7 +103,7 @@ class User implements UserInterface, \Serializable
     /**
      * @param mixed $username
      */
-    public function setUsername($username)
+    public function setUsername(string $username)
     {
         $this->username = $username;
     }
@@ -112,7 +111,7 @@ class User implements UserInterface, \Serializable
     /**
      * @param mixed $password
      */
-    public function setPassword($password)
+    public function setPassword(string $password)
     {
         $this->password = $password;
     }
@@ -120,7 +119,7 @@ class User implements UserInterface, \Serializable
     /**
      * @param mixed $email
      */
-    public function setEmail($email)
+    public function setEmail(string $email)
     {
         $this->email = $email;
     }
@@ -138,7 +137,7 @@ class User implements UserInterface, \Serializable
     /**
      * @return mixed
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -146,7 +145,7 @@ class User implements UserInterface, \Serializable
     /**
      * @return mixed
      */
-    public function getUsername()
+    public function getUsername(): string
     {
         return $this->username;
     }
@@ -154,7 +153,7 @@ class User implements UserInterface, \Serializable
     /**
      * @return mixed
      */
-    public function getPassword()
+    public function getPassword(): string
     {
         return $this->password;
     }
@@ -162,7 +161,7 @@ class User implements UserInterface, \Serializable
     /**
      * @return mixed
      */
-    public function getEmail()
+    public function getEmail(): string
     {
         return $this->email;
     }
@@ -170,12 +169,8 @@ class User implements UserInterface, \Serializable
     /**
      * @return mixed
      */
-    public function getisActive()
+    public function getisActive(): bool
     {
         return $this->isActive;
     }
-
-
-
-
 }

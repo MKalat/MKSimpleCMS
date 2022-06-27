@@ -1,12 +1,11 @@
 <?php
 namespace App\Repository;
 
-
 use App\Entity\BlogPost;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\ORM\Query;
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\Persistence\ManagerRegistry;
 
 class BlogPostRepository extends ServiceEntityRepository
 {
@@ -15,7 +14,7 @@ class BlogPostRepository extends ServiceEntityRepository
         parent::__construct($registry, BlogPost::class);
     }
     
-    public function findAllBlogPostsByLang($lang,  $order, $currentPage = 1, $limit = 5)
+    public function findAllBlogPostsByLang($lang, $order, $currentPage = 1, $limit = 5)
     {
         $pagecount = $currentPage - 1;
         $offset = $limit * $pagecount;
@@ -32,7 +31,4 @@ class BlogPostRepository extends ServiceEntityRepository
          $paginator = new Paginator($query);
          return $paginator;
     }
-    
-    
 }
-

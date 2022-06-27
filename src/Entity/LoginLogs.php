@@ -21,37 +21,37 @@ class LoginLogs
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      */
-    private $id;
+    private int $id;
 
     /**
      * @ORM\Column(type="string")
      */
-    private $login;
+    private string $login;
 
     /**
      * @ORM\Column(type="string")
      */
-    private $ip;
+    private string $ip;
 
     /**
      * @ORM\Column(type="string")
      */
-    private $czas;
+    private string $czas;
 
     /**
      * @ORM\Column(type="string")
      */
-    private $status;
+    private string $status;
 
     /**
      * @ORM\Column(type="string")
      */
-    private $ranga;
+    private string $ranga;
 
     /**
      * @return mixed
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -59,7 +59,7 @@ class LoginLogs
     /**
      * @param mixed $id
      */
-    public function setId($id)
+    public function setId(int $id)
     {
         $this->id = $id;
     }
@@ -67,7 +67,7 @@ class LoginLogs
     /**
      * @return mixed
      */
-    public function getLogin()
+    public function getLogin(): string
     {
         return $this->login;
     }
@@ -75,7 +75,7 @@ class LoginLogs
     /**
      * @param mixed $login
      */
-    public function setLogin($login)
+    public function setLogin(string $login)
     {
         $this->login = $login;
     }
@@ -83,7 +83,7 @@ class LoginLogs
     /**
      * @return mixed
      */
-    public function getIp()
+    public function getIp(): string
     {
         return $this->ip;
     }
@@ -91,7 +91,7 @@ class LoginLogs
     /**
      * @param mixed $ip
      */
-    public function setIp($ip)
+    public function setIp(string $ip)
     {
         $this->ip = $ip;
     }
@@ -99,7 +99,7 @@ class LoginLogs
     /**
      * @return mixed
      */
-    public function getCzas()
+    public function getCzas(): string
     {
         return $this->czas;
     }
@@ -107,7 +107,7 @@ class LoginLogs
     /**
      * @param mixed $czas
      */
-    public function setCzas($czas)
+    public function setCzas(string $czas)
     {
         $this->czas = $czas;
     }
@@ -115,7 +115,7 @@ class LoginLogs
     /**
      * @return mixed
      */
-    public function getStatus()
+    public function getStatus(): string
     {
         return $this->status;
     }
@@ -123,7 +123,7 @@ class LoginLogs
     /**
      * @param mixed $status
      */
-    public function setStatus($status)
+    public function setStatus(string $status)
     {
         $this->status = $status;
     }
@@ -131,7 +131,7 @@ class LoginLogs
     /**
      * @return mixed
      */
-    public function getRanga()
+    public function getRanga(): string
     {
         return $this->ranga;
     }
@@ -139,10 +139,8 @@ class LoginLogs
     /**
      * @param mixed $ranga
      */
-    public function setRanga($ranga)
+    public function setRanga(string $ranga)
     {
         $this->ranga = $ranga;
     }
-
-
 }

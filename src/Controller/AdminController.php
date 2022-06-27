@@ -7,6 +7,7 @@ use App\Entity\Download;
 use App\Entity\Links;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PasswordHasher\PasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use App\Entity\LoginLogs;
@@ -14,10 +15,9 @@ use App\Entity\Pages;
 use App\Entity\FAQ;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Service\DataTablesSupport;
-use Doctrine\DBAL\Driver\Connection;
+use Doctrine\DBAL\Connection;
 use App\Entity\User;
-
-
+use Doctrine\ORM\EntityManagerInterface;
 
 class AdminController extends AbstractController
 {
@@ -25,43 +25,38 @@ class AdminController extends AbstractController
     /**
      * @Route("/admin", name="admin-index")
      */
-    public function indexAction()
+    public function indexAction(EntityManagerInterface $em)
     {
 
-            $em = $this->getDoctrine()->getRepository('App:LoginLogs');
+            $repo = $em->getRepository('App:LoginLogs');
 
 
-            $logs_records = $em->findBy(array(),array('czas'=>'DESC'),0,1);
+            $logs_records = $repo->findBy(array(), array('czas'=>'DESC'), 0, 1);
 
-            if ($logs_records)
-            {
-                $last_log_record = $logs_records[0];
+        if ($logs_records) {
+            $last_log_record = $logs_records[0];
 
-                $name = $last_log_record['login'];
-            }
-            else
-            {
-                $name = '';
-            }
+            $name = $last_log_record['login'];
+        } else {
+            $name = '';
+        }
             $user = $this->getUser();
 
             $loginLogs = new LoginLogs();
             $loginLogs->setIp($_SERVER['REMOTE_ADDR']);
             $loginLogs->setCzas(date('Y-m-d H:i:s'), time());
             $loginLogs->setLogin($user->getUsername());
-            $loginLogs->setRanga(implode(",",$user->getRoles()));
-            if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-                $loginLogs->setStatus($_SERVER['HTTP_X_FORWARDED_FOR']);
-            }
-            else {
-                $loginLogs->setStatus('no proxy ?');
-            }
-            $entityManager = $this->getDoctrine()->getManager();
+            $loginLogs->setRanga(implode(",", $user->getRoles()));
+        if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $loginLogs->setStatus($_SERVER['HTTP_X_FORWARDED_FOR']);
+        } else {
+            $loginLogs->setStatus('no proxy ?');
+        }
+            $entityManager = $em;
             $entityManager->persist($loginLogs);
             $entityManager->flush();
 
             return $this->render('admin/index.html.twig', array('lastadmin' => $name));
-        
     }
 
     /**
@@ -72,8 +67,6 @@ class AdminController extends AbstractController
 
 
         return $this->render('admin/loginlogs.html.twig');
-
-       
     }
 
    
@@ -97,9 +90,9 @@ class AdminController extends AbstractController
         $orderSql = $dtSupp->orderData($request->query->all(), $cols);
         $filterSql = $dtSupp->filterData($request->query->all(), $cols);
         
-        $logs_total = $connection->fetchAll("SELECT id, ip, login, czas, status, ranga FROM loginlogs ");
+        $logs_total = $connection->fetchAllAssociative("SELECT id, ip, login, czas, status, ranga FROM loginlogs ");
 
-        $logs_raw = $connection->fetchAll("SELECT id, ip, login, czas, status, ranga FROM loginlogs ".$filterSql.' '.$orderSql.' '.$limitSql."");
+        $logs_raw = $connection->fetchAllAssociative("SELECT id, ip, login, czas, status, ranga FROM loginlogs ".$filterSql.' '.$orderSql.' '.$limitSql);
 
         $response = array();
         $response['draw'] = intval($request->query->get('draw'));
@@ -107,14 +100,11 @@ class AdminController extends AbstractController
         $response["recordsFiltered"] = count($logs_total);
         $response['data'] = array();
 
-        foreach ($logs_raw as $item)
-        {
+        foreach ($logs_raw as $item) {
             $response['data'][] = [$item['id'], $item['ip'], $item['login'], $item['czas'], $item['status'], $item['ranga']];
-
         }
 
         return new Response(json_encode($response));
-
     }
 
     /**
@@ -124,8 +114,7 @@ class AdminController extends AbstractController
     {
 
 
-            return $this->render('admin/links.html.twig' );
-         
+            return $this->render('admin/links.html.twig');
     }
 
 
@@ -133,15 +122,11 @@ class AdminController extends AbstractController
     /**
      * @Route("/admin/linksdelete", name="admin_links_delete")
      */
-    public function linksDeleteAction(Request $request)
+    public function linksDeleteAction(Request $request, EntityManagerInterface $em)
     {
-
-        
         $data = $request->get('dataTables');
         $ids  = $data['actions'];
-        
-          $em = $this->getDoctrine()->getManager();
-            
+
         $qb = $em->createQueryBuilder();
         $qb->select('l');
         $qb->from('AppBundle:Links', 'l');
@@ -150,12 +135,10 @@ class AdminController extends AbstractController
         //ArrayCollection
         $result = $qb->getQuery()->getResult();
         
-        if ($result)
-        {
-            foreach($result as $link)
-            {
+        if ($result) {
+            foreach ($result as $link) {
                 $em->remove($link);
-                $em->flush();   
+                $em->flush();
             }
         }
         return $this->redirectToRoute("admin-links");
@@ -180,9 +163,9 @@ class AdminController extends AbstractController
         $orderSql = $dtSupp->orderData($request->query->all(), $cols);
         $filterSql = $dtSupp->filterData($request->query->all(), $cols);
         
-        $logs_total = $connection->fetchAll("SELECT id, pozycja, etykieta, link, strona, lang FROM links ");
+        $logs_total = $connection->fetchAllAssociative("SELECT id, pozycja, etykieta, link, strona, lang FROM links ");
 
-        $logs_raw = $connection->fetchAll("SELECT id, pozycja, etykieta, link, strona, lang FROM links ".$filterSql.' '.$orderSql.' '.$limitSql."");
+        $logs_raw = $connection->fetchAllAssociative("SELECT id, pozycja, etykieta, link, strona, lang FROM links ".$filterSql.' '.$orderSql.' '.$limitSql);
 
         $response = array();
         $response['draw'] = intval($request->query->get('draw'));
@@ -190,99 +173,86 @@ class AdminController extends AbstractController
         $response["recordsFiltered"] = count($logs_total);
         $response['data'] = array();
 
-        foreach ($logs_raw as $item)
-        {
+        foreach ($logs_raw as $item) {
             $response['data'][] = [$item['id'], $item['pozycja'], $item['etykieta'], $item['link'], $item['strona'], $item['lang']];
-
         }
 
         return new Response(json_encode($response));
-      
-             
     }
 
     /**
      * @Route("/admin/linksdetails/{id}", name="admin_links_details")
      */
-    public function linksdetailsAction(Request $request, $id)
+    public function linksdetailsAction(Request $request, EntityManagerInterface $em, $id)
     {
 
             //$id = $request->query->get('id');
             $action = $request->request->get('Action');
-            $repository = $this->getDoctrine()->getRepository('App:Links');
+            $repository = $em->getRepository('App:Links');
 
             $linkDetails = $repository->findOneBy(array('id' => $id));
 
 
-            if ($request->getRealMethod() == 'POST')
-            {
-                if (!$linkDetails)
-                {
-                    $linkDetails = new Links();
-                }
-                if ($action == 'Save')
-                {
-                    $linkDetails->setPozycja($request->request->get('pozycja'));
-                    $linkDetails->setEtykieta($request->request->get('etykieta'));
-                    $linkDetails->setLink($request->request->get('link'));
-                    $linkDetails->setStrona($request->request->get('strona'));
-                    $linkDetails->setLang($request->request->get('lang'));
-
-                    $entityManager = $this->getDoctrine()->getManager();
-                    $entityManager->persist($linkDetails);
-                    $entityManager->flush();
-                }
-                else if ($action == 'Delete')
-                {
-                    if ($linkDetails)
-                    {
-                         $em = $this->getDoctrine()->getManager();
-                         $em->remove($linkDetails);
-                         $em->flush();
-                    }
-                }
-                return $this->redirectToRoute("admin-links");
-
+        if ($request->getRealMethod() == 'POST') {
+            if (!$linkDetails) {
+                $linkDetails = new Links();
             }
-            if (!$linkDetails)
-            {
-                $linkDetails = '';
-            }
-
-            return $this->render('admin/adminlinksdetails.html.twig', array(
-                'logs' => $linkDetails,
-
-            ));
-       
-    }
-
-    /**
-     * @Route("/admin/linksnew", name="new-link")
-     */
-    public function linkNewAction(Request $request)
-    {
-        $linkDetails = new Links();
-            if ($request->getRealMethod() == 'POST')
-            {
-
-
-
+            if ($action == 'Save') {
                 $linkDetails->setPozycja($request->request->get('pozycja'));
                 $linkDetails->setEtykieta($request->request->get('etykieta'));
                 $linkDetails->setLink($request->request->get('link'));
                 $linkDetails->setStrona($request->request->get('strona'));
                 $linkDetails->setLang($request->request->get('lang'));
 
-                $entityManager = $this->getDoctrine()->getManager();
+                $entityManager = $em;
                 $entityManager->persist($linkDetails);
                 $entityManager->flush();
-
+            } elseif ($action == 'Delete') {
+                if ($linkDetails) {
+                     $em->remove($linkDetails);
+                     $em->flush();
+                }
             }
+            return $this->redirectToRoute("admin-links");
+        }
+        if (!$linkDetails) {
+            $linkDetails = '';
+        }
+
+            return $this->render('admin/adminlinksdetails.html.twig', array(
+                'logs' => $linkDetails,
+
+            ));
+    }
+
+    /**
+     * @Route("/admin/linksnew", name="new-link")
+     */
+    public function linkNewAction(Request $request, EntityManagerInterface $em)
+    {
+
+        if ($request->getRealMethod() == 'POST') {
+            $linkDetails = new Links();
+            $linkDetails->setPozycja($request->request->get('pozycja'));
+            $linkDetails->setEtykieta($request->request->get('etykieta'));
+            $linkDetails->setLink($request->request->get('link'));
+            $linkDetails->setStrona($request->request->get('strona'));
+            $linkDetails->setLang($request->request->get('lang'));
+
+            $entityManager = $em;
+            $entityManager->persist($linkDetails);
+            $entityManager->flush();
+
             return $this->render('admin/adminlinksdetails.html.twig', array(
                 'logs' => $linkDetails
 
             ));
-        
+        } else {
+            return $this->render('admin/adminlinksdetails.html.twig', array(
+                'logs' => null
+
+            ));
+        }
     }
 
     /**
@@ -290,10 +260,7 @@ class AdminController extends AbstractController
      */
     public function pagesAction()
     {
-
-
             return $this->render('admin/pages.html.twig');
-        
     }
 
     
@@ -301,15 +268,13 @@ class AdminController extends AbstractController
     /**
      * @Route("/admin/pagesdelete", name="admin_pages_delete")
      */
-    public function pagesDeleteAction(Request $request)
+    public function pagesDeleteAction(Request $request, EntityManagerInterface $em)
     {
 
         
         $data = $request->get('dataTables');
         $ids  = $data['actions'];
-        
-          $em = $this->getDoctrine()->getManager();
-            
+
         $qb = $em->createQueryBuilder();
         $qb->select('p');
         $qb->from('App:Pages', 'p');
@@ -318,12 +283,10 @@ class AdminController extends AbstractController
         //ArrayCollection
         $result = $qb->getQuery()->getResult();
         
-        if ($result)
-        {
-            foreach($result as $page)
-            {
+        if ($result) {
+            foreach ($result as $page) {
                 $em->remove($page);
-                $em->flush();   
+                $em->flush();
             }
         }
          return $this->redirectToRoute("admin-pages");
@@ -347,9 +310,9 @@ class AdminController extends AbstractController
         $orderSql = $dtSupp->orderData($request->query->all(), $cols);
         $filterSql = $dtSupp->filterData($request->query->all(), $cols);
         
-        $logs_total = $connection->fetchAll("SELECT id, etykieta, link, lang FROM pages ");
+        $logs_total = $connection->fetchAllAssociative("SELECT id, etykieta, link, lang FROM pages ");
 
-        $logs_raw = $connection->fetchAll("SELECT id, etykieta, link, lang FROM pages ".$filterSql.' '.$orderSql.' '.$limitSql."");
+        $logs_raw = $connection->fetchAllAssociative("SELECT id, etykieta, link, lang FROM pages ".$filterSql.' '.$orderSql.' '.$limitSql);
 
         $response = array();
         $response['draw'] = intval($request->query->get('draw'));
@@ -357,98 +320,84 @@ class AdminController extends AbstractController
         $response["recordsFiltered"] = count($logs_total);
         $response['data'] = array();
 
-        foreach ($logs_raw as $item)
-        {
+        foreach ($logs_raw as $item) {
             $response['data'][] = [$item['id'], $item['etykieta'], $item['link'], $item['lang']];
-
         }
 
         return new Response(json_encode($response));
-        
     }
 
     /**
      * @Route("/admin/pagesdetails/{id}", name="admin_pages_details")
      */
-    public function pagesdetailsAction(Request $request,$id)
+    public function pagesdetailsAction(Request $request, EntityManagerInterface $em, $id)
     {
 
             //$id = $request->query->get('id');
             $action = $request->request->get('Action');
-            $repository = $this->getDoctrine()->getRepository('App:Pages');
+            $repository = $em->getRepository('App:Pages');
 
             $pageDetails = $repository->findOneBy(array('id' => $id));
 
 
-            if ($request->getRealMethod() == 'POST')
-            {
-                if (!$pageDetails)
-                {
-                    $pageDetails = new Pages();
-                }
-                if ($action == 'Save')
-                {
-                    $pageDetails->setEtykieta($request->request->get('etykieta'));
-                    $pageDetails->setLink($request->request->get('link'));
-                    $pageDetails->setLang($request->request->get('lang'));
-                    $pageDetails->setContent($request->request->get('content'));
-
-                    $entityManager = $this->getDoctrine()->getManager();
-                    $entityManager->persist($pageDetails);
-                    $entityManager->flush();
-                }
-                else if ($action == 'Delete')
-                {
-                    if ($pageDetails)
-                    {
-                        $em = $this->getDoctrine()->getManager();
-                        $em->remove($pageDetails);
-                        $em->flush();
-                    }
-                }
-                return $this->redirectToRoute("admin-pages");
+        if ($request->getRealMethod() == 'POST') {
+            if (!$pageDetails) {
+                $pageDetails = new Pages();
             }
-
-            if (!$pageDetails)
-            {
-                $pageDetails = '';
-            }
-
-            return $this->render('admin/adminpagesdetails.html.twig', array(
-                'logs' => $pageDetails,
-
-            ));
-        
-    }
-
-    /**
-     * @Route("/admin/pagesnew", name="new-page")
-     */
-    public function pageNewAction(Request $request)
-    {
-        $pageDetails = new Pages();
-            if ($request->getRealMethod() == 'POST')
-            {
-
-
-
-
+            if ($action == 'Save') {
                 $pageDetails->setEtykieta($request->request->get('etykieta'));
                 $pageDetails->setLink($request->request->get('link'));
                 $pageDetails->setLang($request->request->get('lang'));
                 $pageDetails->setContent($request->request->get('content'));
 
-                $entityManager = $this->getDoctrine()->getManager();
+                $entityManager = $em;
                 $entityManager->persist($pageDetails);
                 $entityManager->flush();
-
+            } elseif ($action == 'Delete') {
+                if ($pageDetails) {
+                    $em->remove($pageDetails);
+                    $em->flush();
+                }
             }
+            return $this->redirectToRoute("admin-pages");
+        }
+
+        if (!$pageDetails) {
+            $pageDetails = '';
+        }
+
+            return $this->render('admin/adminpagesdetails.html.twig', array(
+                'logs' => $pageDetails,
+
+            ));
+    }
+
+    /**
+     * @Route("/admin/pagesnew", name="new-page")
+     */
+    public function pageNewAction(Request $request, EntityManagerInterface $em)
+    {
+        if ($request->getRealMethod() == 'POST') {
+            $pageDetails = new Pages();
+            $pageDetails->setEtykieta($request->request->get('etykieta'));
+            $pageDetails->setLink($request->request->get('link'));
+            $pageDetails->setLang($request->request->get('lang'));
+            $pageDetails->setContent($request->request->get('content'));
+
+            $entityManager = $em;
+            $entityManager->persist($pageDetails);
+            $entityManager->flush();
 
             return $this->render('admin/adminpagesdetails.html.twig', array(
                 'logs' => $pageDetails
 
             ));
-         
+        } else {
+            return $this->render('admin/adminpagesdetails.html.twig', array(
+                'logs' => null
+
+            ));
+        }
     }
 
     /**
@@ -459,7 +408,6 @@ class AdminController extends AbstractController
 
 
         return $this->render('admin/posts.html.twig');
-
     }
 
     
@@ -482,9 +430,9 @@ class AdminController extends AbstractController
         $orderSql = $dtSupp->orderData($request->query->all(), $cols);
         $filterSql = $dtSupp->filterData($request->query->all(), $cols);
         
-        $logs_total = $connection->fetchAll("SELECT id, title, category, lang FROM blogposts ");
+        $logs_total = $connection->fetchAllAssociative("SELECT id, title, category, lang FROM blogposts ");
 
-        $logs_raw = $connection->fetchAll("SELECT id, title, category, lang FROM blogposts ".$filterSql.' '.$orderSql.' '.$limitSql."");
+        $logs_raw = $connection->fetchAllAssociative("SELECT id, title, category, lang FROM blogposts ".$filterSql.' '.$orderSql.' '.$limitSql);
 
         $response = array();
         $response['draw'] = intval($request->query->get('draw'));
@@ -492,62 +440,49 @@ class AdminController extends AbstractController
         $response["recordsFiltered"] = count($logs_total);
         $response['data'] = array();
 
-        foreach ($logs_raw as $item)
-        {
+        foreach ($logs_raw as $item) {
             $response['data'][] = [$item['id'], $item['title'], $item['category'], $item['lang']];
-
         }
 
         return new Response(json_encode($response));
-
-
     }
 
     /**
      * @Route("/admin/postsdetails/{id}", name="admin_posts_details")
      */
-    public function postsdetailsAction(Request $request,$id)
+    public function postsdetailsAction(Request $request, EntityManagerInterface $em, $id)
     {
 
         //$id = $request->query->get('id');
         $action = $request->request->get('Action');
-        $repository = $this->getDoctrine()->getRepository('App:BlogPost');
+        $repository = $em->getRepository('App:BlogPost');
 
         $postDetails = $repository->findOneBy(array('id' => $id));
 
 
-        if ($request->getRealMethod() == 'POST')
-        {
-            if (!$postDetails)
-            {
+        if ($request->getRealMethod() == 'POST') {
+            if (!$postDetails) {
                 $postDetails = new BlogPost();
             }
-            if ($action == 'Save')
-            {
+            if ($action == 'Save') {
                 $postDetails->setTitle($request->request->get('title'));
                 $postDetails->setCategory($request->request->get('category'));
                 $postDetails->setLang($request->request->get('lang'));
                 $postDetails->setDate($request->request->get('date'));
                 $postDetails->setContent($request->request->get('content'));
 
-                $entityManager = $this->getDoctrine()->getManager();
+                $entityManager = $em;
                 $entityManager->persist($postDetails);
                 $entityManager->flush();
-            }
-            else if ($action == 'Delete')
-            {
-                if ($postDetails)
-                {
-                    $em = $this->getDoctrine()->getManager();
+            } elseif ($action == 'Delete') {
+                if ($postDetails) {
                     $em->remove($postDetails);
                     $em->flush();
                 }
             }
             return $this->redirectToRoute("admin-posts");
-
         }
-        if (!$postDetails)
-        {
+        if (!$postDetails) {
             $postDetails = '';
         }
 
@@ -555,49 +490,47 @@ class AdminController extends AbstractController
             'logs' => $postDetails,
 
         ));
-
     }
 
     /**
      * @Route("/admin/postsnew", name="new-post")
      */
-    public function postNewAction(Request $request)
+    public function postNewAction(Request $request, EntityManagerInterface $em)
     {
-        $postDetails = new BlogPost();
-        if ($request->getRealMethod() == 'POST')
-        {
 
-
-
+        if ($request->getRealMethod() == 'POST') {
+            $postDetails = new BlogPost();
             $postDetails->setTitle($request->request->get('title'));
             $postDetails->setCategory($request->request->get('category'));
             $postDetails->setLang($request->request->get('lang'));
             $postDetails->setDate($request->request->get('date'));
             $postDetails->setContent($request->request->get('content'));
 
-            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager = $em;
             $entityManager->persist($postDetails);
             $entityManager->flush();
 
+            return $this->render('admin/adminpostsdetails.html.twig', array(
+                'logs' => $postDetails
+
+            ));
+        } else {
+            return $this->render('admin/adminpostsdetails.html.twig', array(
+                'logs' => null
+
+            ));
         }
-        return $this->render('admin/adminpostsdetails.html.twig', array(
-            'logs' => $postDetails
-
-        ));
-
     }
 
     /**
      * @Route("/admin/postsdelete", name="admin_posts_delete")
      */
-    public function postsDeleteAction(Request $request)
+    public function postsDeleteAction(Request $request, EntityManagerInterface $em)
     {
 
 
         $data = $request->get('dataTables');
         $ids  = $data['actions'];
-
-        $em = $this->getDoctrine()->getManager();
 
         $qb = $em->createQueryBuilder();
         $qb->select('l');
@@ -607,10 +540,8 @@ class AdminController extends AbstractController
         //ArrayCollection
         $result = $qb->getQuery()->getResult();
 
-        if ($result)
-        {
-            foreach($result as $link)
-            {
+        if ($result) {
+            foreach ($result as $link) {
                 $em->remove($link);
                 $em->flush();
             }
@@ -626,7 +557,6 @@ class AdminController extends AbstractController
 
 
         return $this->render('admin/faq.html.twig');
-
     }
 
     /**
@@ -647,9 +577,9 @@ class AdminController extends AbstractController
         $orderSql = $dtSupp->orderData($request->query->all(), $cols);
         $filterSql = $dtSupp->filterData($request->query->all(), $cols);
         
-        $logs_total = $connection->fetchAll("SELECT id, title, category, lang FROM faq ");
+        $logs_total = $connection->fetchAllAssociative("SELECT id, title, category, lang FROM faq ");
 
-        $logs_raw = $connection->fetchAll("SELECT id, title, category, lang FROM faq ".$filterSql.' '.$orderSql.' '.$limitSql."");
+        $logs_raw = $connection->fetchAllAssociative("SELECT id, title, category, lang FROM faq ".$filterSql.' '.$orderSql.' '.$limitSql);
 
         $response = array();
         $response['draw'] = intval($request->query->get('draw'));
@@ -657,61 +587,48 @@ class AdminController extends AbstractController
         $response["recordsFiltered"] = count($logs_total);
         $response['data'] = array();
 
-        foreach ($logs_raw as $item)
-        {
+        foreach ($logs_raw as $item) {
             $response['data'][] = [$item['id'], $item['title'], $item['category'], $item['lang']];
-
         }
 
         return new Response(json_encode($response));
-
-
     }
 
     /**
      * @Route("/admin/faqdetails/{id}", name="admin_faq_details")
      */
-    public function faqdetailsAction(Request $request,$id)
+    public function faqdetailsAction(Request $request, EntityManagerInterface $em, $id)
     {
 
         //$id = $request->query->get('id');
         $action = $request->request->get('Action');
-        $repository = $this->getDoctrine()->getRepository('App:FAQ');
+        $repository = $em->getRepository('App:FAQ');
 
         $faqDetails = $repository->findOneBy(array('id' => $id));
 
 
-        if ($request->getRealMethod() == 'POST')
-        {
-            if (!$faqDetails)
-            {
+        if ($request->getRealMethod() == 'POST') {
+            if (!$faqDetails) {
                 $faqDetails = new FAQ();
             }
-            if ($action == 'Save')
-            {
+            if ($action == 'Save') {
                 $faqDetails->setTitle($request->request->get('title'));
                 $faqDetails->setCategory($request->request->get('category'));
                 $faqDetails->setLang($request->request->get('lang'));
                 $faqDetails->setContent($request->request->get('content'));
 
-                $entityManager = $this->getDoctrine()->getManager();
+                $entityManager = $em;
                 $entityManager->persist($faqDetails);
                 $entityManager->flush();
-            }
-            else if ($action == 'Delete')
-            {
-                if ($faqDetails)
-                {
-                    $em = $this->getDoctrine()->getManager();
+            } elseif ($action == 'Delete') {
+                if ($faqDetails) {
                     $em->remove($faqDetails);
                     $em->flush();
                 }
             }
             return $this->redirectToRoute("admin-faq");
-
         }
-        if (!$faqDetails)
-        {
+        if (!$faqDetails) {
             $faqDetails = '';
         }
 
@@ -719,35 +636,35 @@ class AdminController extends AbstractController
             'logs' => $faqDetails,
 
         ));
-
     }
 
     /**
      * @Route("/admin/faqnew", name="new-faq")
      */
-    public function faqNewAction(Request $request)
+    public function faqNewAction(Request $request, EntityManagerInterface $em)
     {
-        $faqDetails = new FAQ();
-        if ($request->getRealMethod() == 'POST')
-        {
 
-
-
+        if ($request->getRealMethod() == 'POST') {
+            $faqDetails = new FAQ();
             $faqDetails->setTitle($request->request->get('title'));
             $faqDetails->setCategory($request->request->get('category'));
             $faqDetails->setLang($request->request->get('lang'));
             $faqDetails->setContent($request->request->get('content'));
 
-            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager = $em;
             $entityManager->persist($faqDetails);
             $entityManager->flush();
 
+            return $this->render('admin/adminfaqdetails.html.twig', array(
+                'logs' => $faqDetails
+
+            ));
+        } else {
+            return $this->render('admin/adminfaqdetails.html.twig', array(
+                'logs' => null
+
+            ));
         }
-        return $this->render('admin/adminfaqdetails.html.twig', array(
-            'logs' => $faqDetails
-
-        ));
-
     }
 
     /**
@@ -758,7 +675,6 @@ class AdminController extends AbstractController
 
 
         return $this->render('admin/download.html.twig');
-
     }
 
     /**
@@ -781,9 +697,9 @@ class AdminController extends AbstractController
         $orderSql = $dtSupp->orderData($request->query->all(), $cols);
         $filterSql = $dtSupp->filterData($request->query->all(), $cols);
 
-        $logs_total = $connection->fetchAll("SELECT id FROM download ");
+        $logs_total = $connection->fetchAllAssociative("SELECT id FROM download ");
 
-        $logs_raw = $connection->fetchAll("SELECT id, dl_name, version, author, lang, category, dl_size, license, download_path, imagepath, description FROM download ".$filterSql.' '.$orderSql.' '.$limitSql."");
+        $logs_raw = $connection->fetchAllAssociative("SELECT id, dl_name, version, author, lang, category, dl_size, license, download_path, imagepath, description FROM download ".$filterSql.' '.$orderSql.' '.$limitSql);
 
         $response = array();
         $response['draw'] = intval($request->query->get('draw'));
@@ -791,38 +707,31 @@ class AdminController extends AbstractController
         $response["recordsFiltered"] = count($logs_total);
         $response['data'] = array();
 
-        foreach ($logs_raw as $item)
-        {
+        foreach ($logs_raw as $item) {
             $response['data'][] = [$item['id'], $item['dl_name'], $item['category'], $item['lang'], $item['version']];
-
         }
 
         return new Response(json_encode($response));
-
-
     }
 
     /**
      * @Route("/admin/downloaddetails/{id}", name="admin_download_details")
      */
-    public function downloaddetailsAction(Request $request,$id)
+    public function downloaddetailsAction(Request $request, EntityManagerInterface $em, $id)
     {
 
         //$id = $request->query->get('id');
         $action = $request->request->get('Action');
-        $repository = $this->getDoctrine()->getRepository('App:Download');
+        $repository = $em->getRepository('App:Download');
 
         $dlDetails = $repository->findOneBy(array('id' => $id));
 
 
-        if ($request->getRealMethod() == 'POST')
-        {
-            if (!$dlDetails)
-            {
+        if ($request->getRealMethod() == 'POST') {
+            if (!$dlDetails) {
                 $dlDetails = new Download();
             }
-            if ($action == 'Save')
-            {
+            if ($action == 'Save') {
                 $dlDetails->setDlName($request->request->get('dl_name'));
                 $dlDetails->setCategory($request->request->get('category'));
                 $dlDetails->setLang($request->request->get('lang'));
@@ -835,24 +744,18 @@ class AdminController extends AbstractController
                 $dlDetails->setVersion($request->request->get('version'));
                 $dlDetails->setDescription($request->request->get('description'));
 
-                $entityManager = $this->getDoctrine()->getManager();
+                $entityManager = $em;
                 $entityManager->persist($dlDetails);
                 $entityManager->flush();
-            }
-            else if ($action == 'Delete')
-            {
-                if ($dlDetails)
-                {
-                    $em = $this->getDoctrine()->getManager();
+            } elseif ($action == 'Delete') {
+                if ($dlDetails) {
                     $em->remove($dlDetails);
                     $em->flush();
                 }
             }
             return $this->redirectToRoute("admin-downloads");
-
         }
-        if (!$dlDetails)
-        {
+        if (!$dlDetails) {
             $dlDetails = '';
         }
 
@@ -860,17 +763,16 @@ class AdminController extends AbstractController
             'logs' => $dlDetails,
 
         ));
-
     }
 
     /**
      * @Route("/admin/downloadnew", name="new-download")
      */
-    public function downloadNewAction(Request $request)
+    public function downloadNewAction(Request $request, EntityManagerInterface $em)
     {
-        $dlDetails = new Download();
-        if ($request->getRealMethod() == 'POST')
-        {
+
+        if ($request->getRealMethod() == 'POST') {
+            $dlDetails = new Download();
             $dlDetails->setDlName($request->request->get('dl_name'));
             $dlDetails->setCategory($request->request->get('category'));
             $dlDetails->setLang($request->request->get('lang'));
@@ -883,16 +785,20 @@ class AdminController extends AbstractController
             $dlDetails->setVersion($request->request->get('version'));
             $dlDetails->setDescription($request->request->get('description'));
 
-            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager = $em;
             $entityManager->persist($dlDetails);
             $entityManager->flush();
 
+            return $this->render('admin/admindownloaddetails.html.twig', array(
+                'logs' => $dlDetails
+
+            ));
+        } else {
+            return $this->render('admin/admindownloaddetails.html.twig', array(
+                'logs' => null
+
+            ));
         }
-        return $this->render('admin/admindownloaddetails.html.twig', array(
-            'logs' => $dlDetails
-
-        ));
-
     }
 
     /**
@@ -903,7 +809,6 @@ class AdminController extends AbstractController
 
 
         return $this->render('admin/user.html.twig');
-
     }
 
     /**
@@ -917,18 +822,15 @@ class AdminController extends AbstractController
             array( "db" => "username", "dt" => "1" ),
             array( "db" => "password", "dt" => "2" ),
             array( "db" => "email", "dt" => "3" ),
-
-
-
         );
 
         $limitSql = $dtSupp->limitData($request->query->all());
         $orderSql = $dtSupp->orderData($request->query->all(), $cols);
         $filterSql = $dtSupp->filterData($request->query->all(), $cols);
 
-        $logs_total = $connection->fetchAll("SELECT id FROM users ");
+        $logs_total = $connection->fetchAllAssociative("SELECT id FROM users ");
 
-        $logs_raw = $connection->fetchAll("SELECT id, username, password, email FROM users ".$filterSql.' '.$orderSql.' '.$limitSql."");
+        $logs_raw = $connection->fetchAllAssociative("SELECT id, username, password, email FROM users ".$filterSql.' '.$orderSql.' '.$limitSql);
 
         $response = array();
         $response['draw'] = intval($request->query->get('draw'));
@@ -936,61 +838,48 @@ class AdminController extends AbstractController
         $response["recordsFiltered"] = count($logs_total);
         $response['data'] = array();
 
-        foreach ($logs_raw as $item)
-        {
+        foreach ($logs_raw as $item) {
             $response['data'][] = [$item['id'], $item['username'], $item['password'], $item['email']];
-
         }
 
         return new Response(json_encode($response));
-
-
     }
 
     /**
      * @Route("/admin/userdetails/{id}", name="admin_user_details")
      */
-    public function userdetailsAction(Request $request,$id)
+    public function userdetailsAction(Request $request, EntityManagerInterface $em, $id)
     {
 
         //$id = $request->query->get('id');
         $action = $request->request->get('Action');
-        $repository = $this->getDoctrine()->getRepository('App:User');
+        $repository = $em->getRepository('App:User');
 
         $userDetails = $repository->findOneBy(array('id' => $id));
 
 
-        if ($request->getRealMethod() == 'POST')
-        {
-            if (!$userDetails)
-            {
+        if ($request->getRealMethod() == 'POST') {
+            if (!$userDetails) {
                 $userDetails = new User();
             }
-            if ($action == 'Save')
-            {
+            if ($action == 'Save') {
                 $userDetails->setUsername($request->request->get('username'));
                 $userDetails->setPassword($request->request->get('password'));
                 $userDetails->setEmail($request->request->get('email'));
 
 
-                $entityManager = $this->getDoctrine()->getManager();
+                $entityManager = $em;
                 $entityManager->persist($userDetails);
                 $entityManager->flush();
-            }
-            else if ($action == 'Delete')
-            {
-                if ($userDetails)
-                {
-                    $em = $this->getDoctrine()->getManager();
+            } elseif ($action == 'Delete') {
+                if ($userDetails) {
                     $em->remove($userDetails);
                     $em->flush();
                 }
             }
             return $this->redirectToRoute("admin-users");
-
         }
-        if (!$userDetails)
-        {
+        if (!$userDetails) {
             $userDetails = '';
         }
 
@@ -998,32 +887,31 @@ class AdminController extends AbstractController
             'logs' => $userDetails,
 
         ));
-
     }
 
     /**
      * @Route("/admin/usernew", name="new-user")
      */
-    public function userNewAction(Request $request)
+    public function userNewAction(Request $request, EntityManagerInterface $em, PasswordHasherInterface $passwordEncoder)
     {
-        $userDetails = new User();
-        if ($request->getRealMethod() == 'POST')
-        {
+        if ($request->getRealMethod() == 'POST') {
+            $userDetails = new User();
             $userDetails->setUsername($request->request->get('username'));
-            $userDetails->setPassword($request->request->get('Password'));
+            $userDetails->setPassword($passwordEncoder->hash($request->request->get('password')));
             $userDetails->setEmail($request->request->get('email'));
-
-
-            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager = $em;
             $entityManager->persist($userDetails);
             $entityManager->flush();
 
+            return $this->render('admin/adminuseretails.html.twig', array(
+                'logs' => $userDetails
+
+            ));
+        } else {
+            return $this->render('admin/adminuseretails.html.twig', array(
+                'logs' => null
+
+            ));
         }
-        return $this->render('admin/adminuseretails.html.twig', array(
-            'logs' => $userDetails
-
-        ));
-
     }
-
 }

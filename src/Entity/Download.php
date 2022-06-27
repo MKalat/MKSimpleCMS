@@ -16,72 +16,72 @@ class Download
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      */
-    private $id;
+    private int $id;
 
     /**
      * @ORM\Column(type="string")
      */
-    private $dl_name;
+    private string $dl_name;
 
     /**
      * @ORM\Column(type="string")
      */
-    private $download_path;
+    private string $download_path;
 
     /**
      * @ORM\Column(type="string")
      */
-    private $imagepath;
+    private string $imagepath;
 
     /**
      * @ORM\Column(type="string")
      */
-    private $version;
+    private string $version;
 
     /**
      * @ORM\Column(type="string")
      */
-    private $license;
+    private string $license;
 
     /**
      * @ORM\Column(type="string")
      */
-    private $author;
+    private string $author;
 
     /**
      * @ORM\Column(type="string")
      */
-    private $date;
+    private string $date;
 
     /**
      * @ORM\Column(type="string")
      */
-    private $dl_size;
+    private string $dl_size;
 
     /**
      * @ORM\Column(type="string")
      */
-    private $category;
+    private string $category;
 
     /**
      * @ORM\Column(type="text")
      */
-    private $description;
+    private string $description;
 
     /**
      * @ORM\Column(type="string")
      */
-    private $lang;
+    private string $lang;
     
     /**
      * @ORM\Column(type="string")
      */
-    private $timestamp;
+    private string $timestamp;
     
     /**
      * @return mixed
      */
-    public function getTimestamp()
+    public function getTimestamp(): string
     {
         return $this->timestamp;
     }
@@ -89,7 +89,7 @@ class Download
     /**
      * @param mixed $timestamp
      */
-    public function setTimestamp($timestamp)
+    public function setTimestamp(string $timestamp)
     {
         $this->timestamp = strtotime($timestamp);
     }
@@ -97,7 +97,7 @@ class Download
     /**
      * @return mixed
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -105,7 +105,7 @@ class Download
     /**
      * @param mixed $id
      */
-    public function setId($id): void
+    public function setId(int $id): void
     {
         $this->id = $id;
     }
@@ -115,7 +115,7 @@ class Download
     /**
      * @return mixed
      */
-    public function getDownloadPath()
+    public function getDownloadPath(): string
     {
         return $this->download_path;
     }
@@ -123,7 +123,7 @@ class Download
     /**
      * @param mixed $download_path
      */
-    public function setDownloadPath($download_path): void
+    public function setDownloadPath(string $download_path): void
     {
         $this->download_path = $download_path;
     }
@@ -131,7 +131,7 @@ class Download
     /**
      * @return mixed
      */
-    public function getImagepath()
+    public function getImagepath(): string
     {
         return $this->imagepath;
     }
@@ -139,7 +139,7 @@ class Download
     /**
      * @param mixed $imagepath
      */
-    public function setImagepath($imagepath): void
+    public function setImagepath(string $imagepath): void
     {
         $this->imagepath = $imagepath;
     }
@@ -147,7 +147,7 @@ class Download
     /**
      * @return mixed
      */
-    public function getVersion()
+    public function getVersion(): string
     {
         return $this->version;
     }
@@ -155,7 +155,7 @@ class Download
     /**
      * @param mixed $version
      */
-    public function setVersion($version): void
+    public function setVersion(string $version): void
     {
         $this->version = $version;
     }
@@ -163,7 +163,7 @@ class Download
     /**
      * @return mixed
      */
-    public function getLicense()
+    public function getLicense(): string
     {
         return $this->license;
     }
@@ -171,7 +171,7 @@ class Download
     /**
      * @param mixed $license
      */
-    public function setLicense($license): void
+    public function setLicense(string $license): void
     {
         $this->license = $license;
     }
@@ -179,7 +179,7 @@ class Download
     /**
      * @return mixed
      */
-    public function getAuthor()
+    public function getAuthor(): string
     {
         return $this->author;
     }
@@ -187,7 +187,7 @@ class Download
     /**
      * @param mixed $author
      */
-    public function setAuthor($author): void
+    public function setAuthor(string $author): void
     {
         $this->author = $author;
     }
@@ -195,7 +195,7 @@ class Download
     /**
      * @return mixed
      */
-    public function getDate()
+    public function getDate(): string
     {
         return $this->date;
     }
@@ -203,7 +203,7 @@ class Download
     /**
      * @param mixed $date
      */
-    public function setDate($date): void
+    public function setDate(string $date): void
     {
         $this->date = $date;
         $this->setTimestamp($date);
@@ -213,7 +213,7 @@ class Download
     /**
      * @return mixed
      */
-    public function getCategory()
+    public function getCategory(): string
     {
         return $this->category;
     }
@@ -221,7 +221,7 @@ class Download
     /**
      * @param mixed $category
      */
-    public function setCategory($category): void
+    public function setCategory(string $category): void
     {
         $this->category = $category;
     }
@@ -229,7 +229,7 @@ class Download
     /**
      * @return mixed
      */
-    public function getDescription()
+    public function getDescription(): string
     {
         return $this->description;
     }
@@ -237,7 +237,7 @@ class Download
     /**
      * @param mixed $description
      */
-    public function setDescription($description): void
+    public function setDescription(string $description): void
     {
         $this->description = $description;
     }
@@ -245,7 +245,7 @@ class Download
     /**
      * @return mixed
      */
-    public function getLang()
+    public function getLang(): string
     {
         return $this->lang;
     }
@@ -253,7 +253,7 @@ class Download
     /**
      * @param mixed $lang
      */
-    public function setLang($lang): void
+    public function setLang(string $lang): void
     {
         $this->lang = $lang;
     }
@@ -261,7 +261,7 @@ class Download
     /**
      * @return mixed
      */
-    public function getDlName()
+    public function getDlName(): string
     {
         return $this->dl_name;
     }
@@ -269,7 +269,7 @@ class Download
     /**
      * @param mixed $dl_name
      */
-    public function setDlName($dl_name): void
+    public function setDlName(string $dl_name): void
     {
         $this->dl_name = $dl_name;
     }
@@ -277,7 +277,7 @@ class Download
     /**
      * @return mixed
      */
-    public function getDlSize()
+    public function getDlSize(): string
     {
         return $this->dl_size;
     }
@@ -285,9 +285,8 @@ class Download
     /**
      * @param mixed $dl_size
      */
-    public function setDlSize($dl_size): void
+    public function setDlSize(string $dl_size): void
     {
         $this->dl_size = $dl_size;
     }
-
 }

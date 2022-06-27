@@ -5,7 +5,7 @@ use App\Entity\Download;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\ORM\Query;
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\Persistence\ManagerRegistry;
 
 class DownloadRepository extends ServiceEntityRepository
 {
@@ -30,7 +30,7 @@ class DownloadRepository extends ServiceEntityRepository
         return $paginator;
     }
 
-    public function findAllDownloadsBySearch($lang,$order,$search_term)
+    public function findAllDownloadsBySearch($lang, $order, $search_term)
     {
         $query = $this->createQueryBuilder('bp')
             ->where('bp.lang = :lang')
@@ -42,10 +42,4 @@ class DownloadRepository extends ServiceEntityRepository
         $result = $query->execute();
         return $result;
     }
-    
-    
-    
-    
-    
 }
-

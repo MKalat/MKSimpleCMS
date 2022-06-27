@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -11,63 +12,57 @@ use App\Entity\LoginLogs;
 
 class DefaultController extends AbstractController
 {
-	/**
+    /**
      * @Route("/", name="index_redir")
      */
     public function indexRedirAction(Request $request)
     {
         return $this->redirectToRoute("index");
-	}
-	
+    }
+    
     /**
      * @Route("/{_locale}/", name="index", defaults={"_locale" = "pl"}, requirements={"_locale" = "en|pl"})
      */
-    public function indexAction(Request $request)
+    public function indexAction(Request $request, EntityManagerInterface $em)
     {
         $_locale = $request->getLocale();
         if ($_locale == 'pl') {
-            $linksRepo = $this->getDoctrine()->getRepository('App:Links');
+            $linksRepo = $em->getRepository('App:Links');
 
-            $links = $linksRepo->findBy(array(
+            $links = $linksRepo->findBy(
+                array(
                 "lang" => 'pl'),
                 array("pozycja" => "ASC")
-
             );
 
-            $frontPageRepo = $this->getDoctrine()->getRepository('App:Pages');
+            $frontPageRepo = $em->getRepository('App:Pages');
 
             $frontPage = $frontPageRepo->findOneBy(array(
                 "lang" => 'pl',
                 "link" => '0',
 
             ));
-
-        }
-        else
-        {
+        } else {
             $_locale = 'en';
-            $linksRepo = $this->getDoctrine()->getRepository('App:Links');
+            $linksRepo = $em->getRepository('App:Links');
 
-            $links = $linksRepo->findBy(array(
+            $links = $linksRepo->findBy(
+                array(
                 "lang" => 'en'),
                 array(
                 "pozycja" =>  "ASC")
-
             );
 
-            $frontPageRepo = $this->getDoctrine()->getRepository('App:Pages');
+            $frontPageRepo = $em->getRepository('App:Pages');
 
             $frontPage = $frontPageRepo->findOneBy(array(
                 "lang" => 'en',
                 "link" => '0',
             ));
         }
-        if ($frontPage)
-        {
+        if ($frontPage) {
             $content = $frontPage->getContent();
-        }
-        else
-        {
+        } else {
             $content = '';
         }
 
@@ -81,11 +76,11 @@ class DefaultController extends AbstractController
     /**
      * @Route("/page/{_locale}/{link}/", name="viewpage", defaults={"_locale" = "en"}, requirements={"_locale" = "en|pl"})
      */
-    public function viewpageAction(Request $request, $link)
+    public function viewpageAction(Request $request, EntityManagerInterface $em, $link)
     {
         $_locale = $request->getLocale();
 
-        $pagesRepo = $this->getDoctrine()->getRepository('App:Pages');
+        $pagesRepo = $em->getRepository('App:Pages');
 
         $frontPage = $pagesRepo->findOneBy(array(
             "link" => $link
@@ -98,7 +93,7 @@ class DefaultController extends AbstractController
         }
 
 
-        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager = $em;
         $query = $entityManager->createQuery(
             "SELECT l
             FROM App:Links l
@@ -118,10 +113,10 @@ class DefaultController extends AbstractController
         /**
          * @Route("/wykonane-projekty-www/", name="projekty-www")
          */
-        public function projektywwwAction()
-        {
-            return $this->render('default/projekty.html.twig', array(
-                'lang' => 'pl'
-            ));
-        }
+    public function projektywwwAction()
+    {
+        return $this->render('default/projekty.html.twig', array(
+            'lang' => 'pl'
+        ));
     }
+}

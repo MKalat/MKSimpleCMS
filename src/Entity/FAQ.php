@@ -20,33 +20,33 @@ class FAQ
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      */
-    private $id;
+    private int $id;
 
     /**
      * @ORM\Column(type="string")
      */
-    private $title;
+    private string $title;
 
     /**
      * @ORM\Column(type="text")
      */
-    private $content;
+    private string $content;
 
     /**
      * @ORM\Column(type="string")
      */
-    private $category;
+    private string $category;
 
     /**
      * @ORM\Column(type="string")
      */
-    private $lang;
+    private string $lang;
 
 
     /**
      * @return mixed
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -54,7 +54,7 @@ class FAQ
     /**
      * @param mixed $id
      */
-    public function setId($id): void
+    public function setId(int $id): void
     {
         $this->id = $id;
     }
@@ -62,7 +62,7 @@ class FAQ
     /**
      * @return mixed
      */
-    public function getTitle()
+    public function getTitle(): string
     {
         return $this->title;
     }
@@ -70,7 +70,7 @@ class FAQ
     /**
      * @param mixed $title
      */
-    public function setTitle($title): void
+    public function setTitle(string $title): void
     {
         $this->title = $title;
     }
@@ -78,7 +78,7 @@ class FAQ
     /**
      * @return mixed
      */
-    public function getContent()
+    public function getContent(): string
     {
         return $this->content;
     }
@@ -86,7 +86,7 @@ class FAQ
     /**
      * @param mixed $content
      */
-    public function setContent($content): void
+    public function setContent(string $content): void
     {
         $this->content = $content;
     }
@@ -94,7 +94,7 @@ class FAQ
     /**
      * @return mixed
      */
-    public function getCategory()
+    public function getCategory(): string
     {
         return $this->category;
     }
@@ -102,7 +102,7 @@ class FAQ
     /**
      * @param mixed $category
      */
-    public function setCategory($category): void
+    public function setCategory(string $category): void
     {
         $this->category = $category;
     }
@@ -110,7 +110,7 @@ class FAQ
     /**
      * @return mixed
      */
-    public function getLang()
+    public function getLang(): string
     {
         return $this->lang;
     }
@@ -118,13 +118,8 @@ class FAQ
     /**
      * @param mixed $lang
      */
-    public function setLang($lang): void
+    public function setLang(string $lang): void
     {
         $this->lang = $lang;
     }
 }
-
-
-
-
-
